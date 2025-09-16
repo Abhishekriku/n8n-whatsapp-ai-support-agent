@@ -45,7 +45,7 @@ Customers on WhatsApp expect instant replies, but businesses often take hours to
 ```
 
 ## Screenshots
-![flow](screenshots/flow-overview.png)
+![flow](screenshots/Whatsapp AI Agent.png)
 
 ## Notes on Credentials & Safety
 - This repo does **not** include secrets. Configure credentials inside n8n.
