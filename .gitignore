@@ -1,0 +1,8 @@
+# Ignore secrets and local clutter
+.env
+*.env
+.DS_Store
+Thumbs.db
+node_modules/
+dist/
+.n8n/
