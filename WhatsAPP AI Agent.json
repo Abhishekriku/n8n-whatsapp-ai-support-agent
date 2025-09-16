@@ -1,0 +1,256 @@
+{
+  "name": "WhatsAPP AI Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "messages"
+        ],
+        "options": {}
+      },
+      "type": "n8n-nodes-base.whatsAppTrigger",
+      "typeVersion": 1,
+      "position": [
+        -832,
+        -128
+      ],
+      "id": "15d4e739-2f69-4a7e-b86b-3175510463c7",
+      "name": "WhatsApp Trigger",
+      "webhookId": "ff12468c-6c73-4793-b55f-74280adc42e5",
+      "credentials": {
+        "whatsAppTriggerApi": {
+          "id": "Hmnpo2Krir6Maxpv",
+          "name": "WhatsApp OAuth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('WhatsApp Trigger').item.json.messages[0].text.body }}",
+        "options": {
+          "systemMessage": "=Enter your prompt here"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -64,
+        -128
+      ],
+      "id": "46cab786-f662-45e5-9149-e0664793a65e",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -240,
+        64
+      ],
+      "id": "cde599d1-0264-4650-92fb-6c5330e60aa7",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "esYu7Jvzs9VrijRq",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "769155056282740",
+        "recipientPhoneNumber": "={{ $('WhatsApp Trigger').item.json.contacts[0].wa_id }}",
+        "textBody": "={{ $json.output }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [
+        256,
+        -128
+      ],
+      "id": "5cfdb14e-6f8a-4b73-a635-6136dd1c677e",
+      "name": "Send message",
+      "webhookId": "7a0a856a-5337-4b1e-b05b-1ca93e37a0c5",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "BPakVMe3rFtdAKjk",
+          "name": "WhatsApp Reply"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "tableId": "ChatMemory",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "Message",
+              "fieldValue": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('fieldValues0_Field_Value', ``, 'string') }}"
+            },
+            {
+              "fieldId": "Sender",
+              "fieldValue": "={{ $('WhatsApp Trigger').item.json.messages[0].from }}"
+            },
+            {
+              "fieldId": "Recipient",
+              "fieldValue": "={{ $('WhatsApp Trigger').item.json.contacts[0].wa_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabaseTool",
+      "typeVersion": 1,
+      "position": [
+        80,
+        64
+      ],
+      "id": "da4b19c5-c256-44ad-b70f-50d577937d46",
+      "name": "Save message",
+      "credentials": {
+        "supabaseApi": {
+          "id": "2naSeK2PgEXnQ9Ik",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "ChatMemory",
+        "returnAll": true,
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "Sender",
+              "condition": "eq",
+              "keyValue": "={{ $json.contacts[0].wa_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -608,
+        -128
+      ],
+      "id": "929e1815-406d-49e8-b56c-cf64cb159058",
+      "name": "get memory",
+      "credentials": {
+        "supabaseApi": {
+          "id": "2naSeK2PgEXnQ9Ik",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "ChatMemory",
+        "include": "specifiedFields",
+        "fieldsToInclude": "Message, created_at",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        -400,
+        -128
+      ],
+      "id": "d994d6c0-2b5d-4122-b889-6e2e8321afee",
+      "name": "Aggregate"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "WhatsApp Trigger": {
+      "main": [
+        [
+          {
+            "node": "get memory",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save message": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get memory": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "b3c92055-3fb5-40ad-885c-f2e2af14f43a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "bef3ed5f0e279332fdab63d7455bdfab081a16b2a924c8a9df0bfd248977890b"
+  },
+  "id": "pVoSxn0w9qm2MZHO",
+  "tags": []
+}
