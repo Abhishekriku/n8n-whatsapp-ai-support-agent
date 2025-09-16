@@ -1,22 +1,31 @@
-# WhatsApp AI Customer Support Agent (n8n + OpenAI + Notion)
+# WhatsApp AI Customer Support Agent (n8n + OpenAI + Supabase Memory)
 
 ## Problem
-Customers wait for replies on WhatsApp and ask repetitive FAQs.
+Customers on WhatsApp expect instant replies, but businesses often take hours to respond or repeat the same answers.
 
-## Solution (n8n)
-- Webhook / WhatsApp Cloud API (receive message)
-- OpenAI node (intent classify; extract entities)
-- Notion DB (FAQ knowledge base lookup)
-- Conditional: fallback to human if low confidence
-- Google Sheets (log transcript & metrics)
-- WhatsApp reply
+##Solution (n8n Workflow)
+
+- WhatsApp Trigger: captures incoming messages in real time.
+- Get Memory (Supabase): fetches past conversation history stored in Supabase.
+- Aggregate: structures input for AI processing.
+- AI Agent: orchestrates the response logic.
+- OpenAI Chat Model: generates contextual replies.
+- Save Message (Supabase): stores the new conversation turn back into Supabase.
+- Send Message (WhatsApp): replies instantly to the customer.
 
 ## Result
-- Faster response times and fewer manual steps.
-- Replace with real or demo metrics (e.g., first response < 2 min, 70% auto‑resolved).
+
+- Delivers instant, contextual responses on WhatsApp.
+- Ensures continuity with stored memory.
+- Provides clear logs for every exchange.
+- Demo metric: reduces first response time to under 2 minutes, and can handle 70%+ of common questions without human intervention.
 
 ## Stack
-n8n, WhatsApp Cloud API, OpenAI, Notion, Google Sheets
+
+- n8n (automation platform)
+- WhatsApp Cloud API (messaging)
+- OpenAI Chat Model (AI responses)
+- Supabase (database for conversation memory & logs)
 
 ## How to Run (Demo)
 1. Import `workflow.json` into n8n (this export is sanitized; set your own credentials).
